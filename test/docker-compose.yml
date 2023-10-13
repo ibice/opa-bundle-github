@@ -1,0 +1,26 @@
+version: "3"
+services:
+  bundleserver:
+    build:
+      context: ..
+      dockerfile: test/Dockerfile
+    ports:
+      - 8080:8080
+    environment:
+      - REPO_OWNER=ibice
+      - REPO_NAME=opa-bundle-github
+      - REPO_DIR=test/bundle/data.json
+      - REPO_BRANCH=main
+      - VERBOSE=false
+  opa:
+    image: openpolicyagent/opa:0.57.0
+    command:
+      - run
+      - --server
+      - --set=services.bundleserver.url=http://bundleserver:8080
+      - --set=bundles.default.service=bundleserver
+      - --set=bundles.default.resource=/bundle.tar.gz
+      - --set=bundles.default.polling.min_delay_seconds=30
+      - --set=bundles.default.polling.max_delay_seconds=60
+    ports:
+      - 8181:8181
