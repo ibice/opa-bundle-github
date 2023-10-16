@@ -76,18 +76,20 @@ func WithToken(token string) Option {
 	return func(r *Repository) {
 		r.token = token
 		r.client = r.client.WithAuthToken(token)
+		slog.Debug("Set token for GitHub client")
 	}
 }
 
 func WithGitHubURL(base *url.URL) Option {
 	return func(r *Repository) {
-		c, err := r.client.WithEnterpriseURLs(base.JoinPath("/api/v3").String(), "")
+		c, err := r.client.WithEnterpriseURLs(base.String(), "")
 		if err != nil {
-			slog.Error("Creating GitHub enterprise client", "baseURL", base.String(), "error", err)
+			slog.Error("Creating GitHub Enterprise client", "baseURL", base.String(), "error", err)
 			return
 		}
 		r.client = c
 		r.baseURL = base
+		slog.Debug("Using GitHub Enterprise client", "baseURL", base.String())
 	}
 }
 
