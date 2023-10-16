@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add traces to repository builder.
-
+- Add health endpoint.
 
 ## [1.0.0] - 2023-09-13
 

@@ -19,8 +19,8 @@ type Server struct {
 }
 
 func New(address string, port uint, repository repository.Interface) *Server {
-	logger := log.Logger.With("address", address, "port", port)
-	logger.Debug("Creating server")
+	logger := log.Logger
+	logger.Debug("Creating server", "address", address, "port", port)
 	return &Server{
 		port:       port,
 		address:    address,
@@ -30,8 +30,16 @@ func New(address string, port uint, repository repository.Interface) *Server {
 }
 
 func (server Server) Run() error {
+	mux := http.NewServeMux()
+
+	mux.Handle("/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("200 OK"))
+	}))
+
+	mux.Handle("/", server)
+
 	server.logger.Info("Listening")
-	return http.ListenAndServe(fmt.Sprintf("%s:%d", server.address, server.port), server)
+	return http.ListenAndServe(fmt.Sprintf("%s:%d", server.address, server.port), mux)
 }
 
 func (server Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
