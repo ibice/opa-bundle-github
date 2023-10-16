@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
@@ -43,11 +42,20 @@ func (server Server) Run() error {
 }
 
 func (server Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		err := fmt.Sprintf("Method not allowed: %v", r.Method)
+		server.logger.Error(err)
+		http.Error(w, err, http.StatusMethodNotAllowed)
+		return
+	}
+
 	lastRevision := r.Header.Get("If-None-Match")
+	server.logger.Debug("Serving bundle request", "lastRevision", lastRevision)
 
 	data, revision, err := server.repository.Get(r.Context(), lastRevision)
 	if err != nil {
-		server.error(w, err.Error(), http.StatusInternalServerError)
+		server.logger.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -60,16 +68,4 @@ func (server Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/gzip")
 	io.Copy(w, data)
-}
-
-type serverError struct {
-	Error string `json:"error"`
-}
-
-func (server Server) error(w http.ResponseWriter, err string, code int) {
-	slog.Error(err)
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
-	w.WriteHeader(code)
-	_ = json.NewEncoder(w).Encode(&serverError{Error: err})
 }

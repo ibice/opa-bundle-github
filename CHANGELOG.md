@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add traces to repository builder.
 - Add health endpoint.
 
+### Fixed
+
+- Don't add `/api/v3` to configured GitHub base URL.
+
+### Removed
+
+- Error responses don't need to be JSON encoded.
+
 ## [1.0.0] - 2023-09-13
 
 ### Added
