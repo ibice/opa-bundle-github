@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net/http"
 	"net/url"
 	"path"
 	"strings"
@@ -61,7 +62,7 @@ func New(repo, owner, dir, branch string, opts ...Option) (*Repository, error) {
 		owner:   owner,
 		dir:     dir,
 		branch:  branch,
-		client:  github.NewClient(nil),
+		client:  github.NewClient(&http.Client{Transport: newLoggerRoundTripper("githubClient")}),
 		logger:  logger,
 		baseURL: &url.URL{Scheme: "https", Host: "api.github.com"},
 	}
